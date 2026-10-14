@@ -20,6 +20,9 @@
 <div><label for="shortage_count">7. குறைவு காணப்பட்ட நூல்கள் எண்ணிக்கை</label><input id="shortage_count" type="number" min="0" name="shortage_count" value="{{ row.shortage_count if row.shortage_count is not none }}"></div>
 <div><label for="shortage_value">8. குறைவு காணப்பட்ட நூல்களின் மதிப்பு (₹)</label><input id="shortage_value" type="number" min="0" step="0.01" name="shortage_value" value="{{ row.shortage_value if row.shortage_value is not none }}"></div>
 <div><label for="total_used_books">9. மொத்த பயன்பாட்டு நூல்களின் எண்ணிக்கை</label><input id="total_used_books" type="number" min="0" name="total_used_books" value="{{ row.total_used_books if row.total_used_books is not none }}"></div>
+<div class="full"><label>10. புள்ளி விவர பயன்பாட்டு காலம்</label>
+<div class="range"><div><small>முதல்</small><input type="date" name="stat_period_from" value="{{ row.stat_period_from or '' }}"></div>
+<div><small>முடிய</small><input type="date" name="stat_period_to" value="{{ row.stat_period_to or '' }}"></div></div></div>
 {% endif %}
 <div class="full"><button class="btn" type="submit">சேமி</button></div>
 </form></div>

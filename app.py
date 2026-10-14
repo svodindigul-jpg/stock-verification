@@ -62,18 +62,19 @@ def form(kind, rid=None):
                 val("officer_report_date") if full else None,
                 val("shortage_count", int) if full else None,
                 val("shortage_value") if full else None,
-                val("total_used_books", int) if full else None]
+                val("total_used_books", int) if full else None,
+                val("stat_period_from") if full else None, val("stat_period_to") if full else None]
         if not (data[0] and data[1] and data[2] and data[3]):
             flash("கோப்பு ந.க.எண்., நாள், நூலகம், நூலக வகை ஆகியவை கட்டாயம்.", "err")
         else:
             if rid:
                 run("""UPDATE stock_verifications SET file_no=%s,file_date=%s,library_id=%s,library_type_id=%s,
                        period_from=%s,period_to=%s,officer_report_date=%s,shortage_count=%s,shortage_value=%s,
-                       total_used_books=%s WHERE id=%s""", data + [rid], None)
+                       total_used_books=%s,stat_period_from=%s,stat_period_to=%s WHERE id=%s""", data + [rid], None)
             else:
                 run("""INSERT INTO stock_verifications(file_no,file_date,library_id,library_type_id,period_from,
-                       period_to,officer_report_date,shortage_count,shortage_value,total_used_books,order_type)
-                       VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)""", data + [kind], None)
+                       period_to,officer_report_date,shortage_count,shortage_value,total_used_books,stat_period_from,stat_period_to,order_type)
+                       VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)""", data + [kind], None)
             flash("பதிவு சேமிக்கப்பட்டது.", "ok")
             return redirect(url_for("listing", kind=kind))
     libs = run("""SELECT l.id, l.name, l.type_id FROM libraries l ORDER BY l.name""")

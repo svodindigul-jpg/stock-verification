@@ -6,11 +6,11 @@
 {% if rows %}
 <div class="table-wrap"><table>
 <tr><th>கோப்பு ந.க.எண்.</th><th>நாள்</th><th>நூலகம்</th><th>நூலக வகை</th>
-{% if meta.full %}<th>சரிபார்ப்பு காலம்</th><th>அறிக்கை நாள்</th><th>குறைவு நூல்கள்</th><th>குறைவு மதிப்பு (₹)</th><th>மொத்த பயன்பாட்டு நூல்கள்</th>{% endif %}<th></th></tr>
+{% if meta.full %}<th>சரிபார்ப்பு காலம்</th><th>அறிக்கை நாள்</th><th>குறைவு நூல்கள்</th><th>குறைவு மதிப்பு (₹)</th><th>மொத்த பயன்பாட்டு நூல்கள்</th><th>புள்ளி விவர பயன்பாட்டு காலம்</th>{% endif %}<th></th></tr>
 {% for r in rows %}<tr>
 <td>{{ r.file_no }}</td><td>{{ r.file_date|dmy }}</td><td>{{ r.lib_name }}</td><td>{{ r.type_name }}</td>
 {% if meta.full %}<td>{{ r.period_from|dmy }} முதல் {{ r.period_to|dmy }} முடிய</td><td>{{ r.officer_report_date|dmy }}</td>
-<td class="n">{{ r.shortage_count if r.shortage_count is not none else '—' }}</td><td class="n">{{ r.shortage_value if r.shortage_value is not none else '—' }}</td><td class="n">{{ r.total_used_books if r.total_used_books is not none else '—' }}</td>{% endif %}
+<td class="n">{{ r.shortage_count if r.shortage_count is not none else '—' }}</td><td class="n">{{ r.shortage_value if r.shortage_value is not none else '—' }}</td><td class="n">{{ r.total_used_books if r.total_used_books is not none else '—' }}</td><td>{{ r.stat_period_from|dmy }} முதல் {{ r.stat_period_to|dmy }} முடிய</td>{% endif %}
 <td style="white-space:nowrap"><a class="btn alt" href="{{ url_for('form', kind=kind, rid=r.id) }}">திருத்து</a>
 <form method="post" action="{{ url_for('delete', kind=kind, rid=r.id) }}" style="display:inline" onsubmit="return confirm('இந்தப் பதிவை நீக்கவா?')"><button class="btn del">நீக்கு</button></form></td>
 </tr>{% endfor %}</table></div>

@@ -24,6 +24,8 @@ CREATE TABLE IF NOT EXISTS stock_verifications (
   shortage_count      INT,
   shortage_value      NUMERIC(14,2),
   total_used_books    INT,
+  stat_period_from    DATE,
+  stat_period_to      DATE,
   created_at          TIMESTAMPTZ DEFAULT now()
 );
 -- பின்னர் தள்ளுபடி ஆணை PDF இணைக்க

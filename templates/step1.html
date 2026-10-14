@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}படி 1{% endblock %}
+{% block body %}<div class="wrap">
+{% with m = get_flashed_messages(with_categories=true) %}{% for c, t in m %}<div class="flash {{c}}">{{t}}</div>{% endfor %}{% endwith %}
+<div class="head"><div><h2>படி 1 – ஒப்பப் புள்ளி கோர அனுமதி</h2><small>{{ lib.name }} – {{ lib.type_name }}</small></div>
+<a class="btn alt" href="{{ url_for('unusable_library', lid=lib.id) }}">பின்செல்</a></div>
+<form method="post" class="card">
+<div><label for="a">1. கோப்பு எண். *</label><input id="a" name="file_no" required value="{{ row.s1_file_no or '' }}"></div>
+<div><label for="b">2. நாள் *</label><input id="b" type="date" name="file_date" required value="{{ row.s1_file_date or '' }}"></div>
+<div><label for="c">3. நூலகர் கடிதம் நாள்</label><input id="c" type="date" name="letter_date" value="{{ row.s1_letter_date or '' }}"></div>
+<div><label for="d">4. இருப்பு சரிபார்ப்பு அலுவலர் பார்வை நாள்</label><input id="d" type="date" name="inspector_date" value="{{ row.s1_inspector_date or '' }}"></div>
+<div><label for="e">5. பழுதடைந்த நூல்கள் எண்ணிக்கை</label><input id="e" type="number" min="0" name="damaged_count" value="{{ row.s1_damaged_count if row.s1_damaged_count is not none }}"></div>
+<div><label for="f">6. பழுதடைந்த நூல்கள் மதிப்பு (₹)</label><input id="f" type="number" min="0" step="0.01" name="damaged_value" value="{{ row.s1_damaged_value if row.s1_damaged_value is not none }}"></div>
+<div class="full"><button class="btn" type="submit">சேமி</button></div></form></div>{% endblock %}

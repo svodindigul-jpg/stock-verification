@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}நடவடிக்கை{% endblock %}
+{% block body %}<style>
+.st{background:#fff;border:1px solid var(--line);border-left:6px solid var(--brass);border-radius:8px;padding:1rem 1.2rem;margin-bottom:.9rem}
+.st.lock{border-left-color:#b9c3d3;color:#7a8596;background:#f0f3f8}.st h3{margin:0 0 .3rem;font-size:1.05rem}
+</style><div class="wrap">
+{% with m = get_flashed_messages(with_categories=true) %}{% for c, t in m %}<div class="flash {{c}}">{{t}}</div>{% endfor %}{% endwith %}
+<div class="head"><div><h2>{{ c.lib_name }}</h2><small>{{ c.type_name }} – கோப்பு எண் {{ c.s1_file_no }}</small></div>
+<a class="btn alt" href="{{ url_for('unusable_library', lid=c.library_id) }}">பின்செல்</a></div>
+<div class="st"><h3>படி 1 – ஒப்பப் புள்ளி கோர அனுமதி ஆணை (முடிந்தது)</h3>
+<p style="margin:.2rem 0 .8rem">நாள் {{ c.s1_file_date|dmy }} · பழுதடைந்த நூல்கள் {{ c.s1_damaged_count if c.s1_damaged_count is not none else '—' }} · மதிப்பு ₹ {{ c.s1_damaged_value if c.s1_damaged_value is not none else '—' }}</p>
+<a class="btn" href="{{ url_for('step1_pdf', cid=c.id) }}">ஆணை PDF</a> <a class="btn alt" href="{{ url_for('step1', cid=c.id) }}">திருத்து</a></div>
+<div class="st lock"><h3>படி 2 – விலைப்புள்ளி பரிசீலனை: அலுவலகக் குறிப்பு, ஆணை</h3>படி 1 முடிந்தது; இந்தப் படி விரைவில் சேர்க்கப்படும்.</div>
+<div class="st lock"><h3>படி 3</h3>படி 2 முடிந்த பின்னரே திறக்கும்.</div>
+<div class="st lock"><h3>படி 4 – விற்பனை ரசீது, இருப்பு நீக்க அனுமதி</h3>படி 3 முடிந்த பின்னரே திறக்கும்.</div>
+</div>{% endblock %}

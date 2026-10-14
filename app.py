@@ -37,6 +37,7 @@ def val(name, cast=str):
 def index():
     counts = {r["order_type"]: r["c"] for r in run(
         "SELECT order_type, COUNT(*) c FROM stock_verifications GROUP BY order_type")}
+    counts["unusable"] = run("SELECT COUNT(*) c FROM condemn_cases", (), "one")["c"]
     return render_template("index.html", kinds=KINDS, counts=counts)
 
 @app.route("/<kind>/")
@@ -78,7 +79,7 @@ def form(kind, rid=None):
             flash("பதிவு சேமிக்கப்பட்டது.", "ok")
             return redirect(url_for("listing", kind=kind))
     libs = run("""SELECT l.id, l.name, l.type_id FROM libraries l ORDER BY l.name""")
-    types = run("SELECT id, name FROM library_types ORDER BY name")
+    types = run("SELECT id, name FROM library_types ORDER BY id")
     return render_template("form.html", kind=kind, meta=meta, row=row or {}, libs=libs, types=types)
 
 @app.route("/usage/<int:rid>/pdf")
@@ -101,6 +102,61 @@ def delete(kind, rid):
     run("DELETE FROM stock_verifications WHERE id=%s AND order_type=%s", (rid, kind), None)
     flash("பதிவு நீக்கப்பட்டது.", "ok")
     return redirect(url_for("listing", kind=kind))
+
+# ---------- பட்டன் 2: பயன்படுத்த இயலாத நூல்கள் (4 படிகள்; இப்போது படி 1) ----------
+CASE_SQL = """SELECT c.*, l.name lib_name, t.name type_name FROM condemn_cases c
+              JOIN libraries l ON l.id=c.library_id JOIN library_types t ON t.id=c.library_type_id WHERE c.id=%s"""
+
+def get_lib(lid):
+    return run("""SELECT l.id, l.name, l.type_id, t.name type_name FROM libraries l
+                  JOIN library_types t ON t.id=l.type_id WHERE l.id=%s""", (lid,), "one") or abort(404)
+
+@app.route("/unusable/")
+def unusable_home():
+    return render_template("pick.html", types=run("SELECT id, name FROM library_types ORDER BY id"),
+                           libs=run("SELECT id, name, type_id FROM libraries ORDER BY name"))
+
+@app.route("/unusable/library/<int:lid>")
+def unusable_library(lid):
+    cases = run("SELECT * FROM condemn_cases WHERE library_id=%s ORDER BY id DESC", (lid,))
+    return render_template("unusable_library.html", lib=get_lib(lid), cases=cases)
+
+@app.route("/unusable/library/<int:lid>/step1", methods=["GET", "POST"])
+@app.route("/unusable/case/<int:cid>/step1", methods=["GET", "POST"])
+def step1(lid=None, cid=None):
+    case = run("SELECT * FROM condemn_cases WHERE id=%s", (cid,), "one") if cid else None
+    if cid and not case: abort(404)
+    lib = get_lib(case["library_id"] if case else lid)
+    if request.method == "POST":
+        d = [val("file_no"), val("file_date"), val("letter_date"), val("inspector_date"),
+             val("damaged_count", int), val("damaged_value")]
+        if not (d[0] and d[1]):
+            flash("கோப்பு எண், நாள் ஆகியவை கட்டாயம்.", "err")
+        else:
+            if case:
+                run("""UPDATE condemn_cases SET s1_file_no=%s,s1_file_date=%s,s1_letter_date=%s,s1_inspector_date=%s,
+                       s1_damaged_count=%s,s1_damaged_value=%s WHERE id=%s""", d + [cid], None)
+            else:
+                cid = run("""INSERT INTO condemn_cases(s1_file_no,s1_file_date,s1_letter_date,s1_inspector_date,
+                             s1_damaged_count,s1_damaged_value,library_id,library_type_id)
+                             VALUES(%s,%s,%s,%s,%s,%s,%s,%s) RETURNING id""", d + [lib["id"], lib["type_id"]], "one")["id"]
+            flash("படி 1 சேமிக்கப்பட்டது.", "ok")
+            return redirect(url_for("unusable_case", cid=cid))
+    return render_template("step1.html", lib=lib, row=case or {})
+
+@app.route("/unusable/case/<int:cid>")
+def unusable_case(cid):
+    return render_template("case.html", c=run(CASE_SQL, (cid,), "one") or abort(404))
+
+@app.route("/unusable/case/<int:cid>/step1.pdf")
+def step1_pdf(cid):
+    from condemn_pdf import build_condemn_step1
+    c = run(CASE_SQL, (cid,), "one") or abort(404)
+    try:
+        data = build_condemn_step1(c)
+    except AssertionError:
+        flash("ஆணை ஒரு பக்கத்தில் அடங்கவில்லை.", "err"); return redirect(url_for("unusable_case", cid=cid))
+    return send_file(io.BytesIO(data), mimetype="application/pdf", as_attachment=True, download_name=f"condemn_step1_{cid}.pdf")
 
 if __name__ == "__main__":
     app.run(debug=True)

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}பயன்படுத்த இயலாத நூல்கள்{% endblock %}
+{% block body %}<div class="wrap">
+<div class="head"><h2>பயன்படுத்த இயலாத நூல்கள் இருப்பு நீக்கம்</h2></div>
+<div class="card" style="background:#fff;border:1px solid var(--line);border-radius:10px;padding:1.5rem;display:grid;gap:1rem;max-width:560px">
+<div><label for="t">1. நூலக வகை</label><select id="t"><option value="">— தேர்வு செய்க —</option>{% for t in types %}<option value="{{ t.id }}">{{ t.name }}</option>{% endfor %}</select></div>
+<div><label for="l">2. நூலகம் பெயர்</label><select id="l" disabled><option value="">— முதலில் வகையைத் தேர்க —</option></select></div>
+<div><button class="btn" id="go" disabled>தொடர்க</button></div></div></div>
+<script>
+const libs = {{ libs|tojson }}, t = document.getElementById('t'), l = document.getElementById('l'), go = document.getElementById('go');
+t.addEventListener('change', () => {
+  l.innerHTML = '<option value="">— தேர்வு செய்க —</option>' + libs.filter(x => String(x.type_id) === t.value).map(x => `<option value="${x.id}">${x.name}</option>`).join('');
+  l.disabled = !t.value; go.disabled = true;
+});
+l.addEventListener('change', () => go.disabled = !l.value);
+go.addEventListener('click', () => location.href = '/unusable/library/' + l.value);
+</script>{% endblock %}

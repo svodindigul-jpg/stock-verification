@@ -24,9 +24,9 @@
 <div class="shelf" aria-hidden="true">{% for h in [38,56,44,66,34,60,48,70,40,54,62,36,58,46,68,42,52,64,38,56,44,60,50,66,36,58,46,62,40,54,68,44] %}<i style="height:{{h}}px"></i>{% endfor %}</div></section>
 <div class="cards">
 {% for k, m in kinds.items() %}
-<a class="act" href="{{ url_for('listing', kind=k) }}">
+<a class="act" href="{{ url_for('unusable_home') if k == 'unusable' else url_for('listing', kind=k) }}">
 <h2>{{ m.title }}</h2>
-<small>{% if m.full %}கோப்பு ந.க.எண்., நூலகம், இருப்பு சரிபார்ப்பு காலம், குறைவு விவரங்கள், மொத்த பயன்பாட்டு நூல்கள், புள்ளி விவர பயன்பாட்டு காலம்{% else %}கோப்பு ந.க.எண்., நாள், நூலகம், நூலக வகை{% endif %}</small>
+<small>{% if m.full %}கோப்பு ந.க.எண்., நூலகம், இருப்பு சரிபார்ப்பு காலம், குறைவு விவரங்கள், மொத்த பயன்பாட்டு நூல்கள், புள்ளி விவர பயன்பாட்டு காலம்{% elif k == 'unusable' %}நூலக வகை, நூலகம் தேர்வு – 4 படிநிலைகள் (இப்போது படி 1){% else %}கோப்பு ந.க.எண்., நாள், நூலகம், நூலக வகை{% endif %}</small>
 <div class="row"><span>பதிவுகள்</span><b>{{ counts.get(k, 0) }}</b></div>
 </a>
 {% endfor %}

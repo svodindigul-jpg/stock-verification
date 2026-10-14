@@ -6,12 +6,12 @@
 <form method="post" class="card">
 <div><label for="file_no">1. கோப்பு ந.க.எண். *</label><input id="file_no" name="file_no" required value="{{ row.file_no or '' }}"></div>
 <div><label for="file_date">2. நாள் *</label><input id="file_date" type="date" name="file_date" required value="{{ row.file_date or '' }}"></div>
-<div><label for="library_id">3. நூலகம் பெயர் *</label>
-<select id="library_id" name="library_id" required><option value="">— தேர்வு செய்க —</option>
-{% for l in libs %}<option value="{{ l.id }}" data-type="{{ l.type_id }}" {{ 'selected' if row.library_id == l.id }}>{{ l.name }}</option>{% endfor %}</select></div>
-<div><label for="library_type_id">4. நூலக வகை *</label>
+<div><label for="library_type_id">3. நூலக வகை *</label>
 <select id="library_type_id" name="library_type_id" required><option value="">— தேர்வு செய்க —</option>
 {% for t in types %}<option value="{{ t.id }}" {{ 'selected' if row.library_type_id == t.id }}>{{ t.name }}</option>{% endfor %}</select></div>
+<div><label for="library_id">4. நூலகம் பெயர் *</label>
+<select id="library_id" name="library_id" required><option value="">— முதலில் வகையைத் தேர்க —</option>
+{% for l in libs %}<option value="{{ l.id }}" data-type="{{ l.type_id }}" {{ 'selected' if row.library_id == l.id }}>{{ l.name }}</option>{% endfor %}</select></div>
 {% if meta.full %}
 <div class="full"><label>5. இருப்பு சரிபார்ப்பு நடைபெற்ற காலம்</label>
 <div class="range"><div><small>முதல்</small><input type="date" name="period_from" value="{{ row.period_from or '' }}"></div>
@@ -27,9 +27,11 @@
 <div class="full"><button class="btn" type="submit">சேமி</button></div>
 </form></div>
 <script>
-// நூலகத்தைத் தேர்ந்தெடுத்ததும் அதன் வகை தானாக தேர்வாகும் (வேண்டுமெனில் மாற்றலாம்)
-document.getElementById('library_id').addEventListener('change', e => {
-  const t = e.target.selectedOptions[0].dataset.type;
-  if (t) document.getElementById('library_type_id').value = t;
-});
+// வகை தேர்ந்ததும் அந்த வகை நூலகங்கள் மட்டும் காட்டப்படும்
+const ty = document.getElementById('library_type_id'), lb = document.getElementById('library_id');
+function filt(keep) {
+  [...lb.options].forEach(o => { if (!o.value) return; const ok = o.dataset.type === ty.value; o.hidden = !ok; o.disabled = !ok; });
+  if (!keep || (lb.selectedOptions[0] && lb.selectedOptions[0].disabled)) lb.value = '';
+}
+ty.addEventListener('change', () => filt(false)); filt(true);
 </script>{% endblock %}

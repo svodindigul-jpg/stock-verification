@@ -21,6 +21,12 @@ def run(sql, args=(), fetch="all"):
     finally:
         conn.close()
 
+def fname(lib_name, suffix):
+    import re
+    from order_pdf import clean_name
+    name = re.sub(r'[\\/:*?"<>|]', "", clean_name(lib_name)).strip()
+    return f"{name}-{suffix}.pdf"
+
 @app.template_filter("dmy")
 def dmy(d): return d.strftime("%d-%m-%Y") if d else "—"
 
@@ -94,7 +100,7 @@ def order_pdf(rid):
     except AssertionError:
         flash("ஆணை ஒரு பக்கத்தில் அடங்கவில்லை.", "err"); return redirect(url_for("listing", kind="usage"))
     return send_file(io.BytesIO(data), mimetype="application/pdf", as_attachment=True,
-                     download_name=f"thallupadi_aanai_{rid}.pdf")
+                     download_name=fname(r["lib_name"], "usage removal"))
 
 @app.post("/<kind>/<int:rid>/delete")
 def delete(kind, rid):
@@ -156,7 +162,7 @@ def step1_pdf(cid):
         data = build_condemn_step1(c)
     except AssertionError:
         flash("ஆணை ஒரு பக்கத்தில் அடங்கவில்லை.", "err"); return redirect(url_for("unusable_case", cid=cid))
-    return send_file(io.BytesIO(data), mimetype="application/pdf", as_attachment=True, download_name=f"condemn_step1_{cid}.pdf")
+    return send_file(io.BytesIO(data), mimetype="application/pdf", as_attachment=True, download_name=fname(c["lib_name"], "quotation callfor"))
 
 if __name__ == "__main__":
     app.run(debug=True)

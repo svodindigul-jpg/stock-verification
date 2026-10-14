@@ -1,6 +1,6 @@
-import os
+import os, io
 import psycopg2, psycopg2.extras
-from flask import Flask, render_template, request, redirect, url_for, flash, abort
+from flask import Flask, send_file, render_template, request, redirect, url_for, flash, abort
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "change-me")
@@ -80,6 +80,20 @@ def form(kind, rid=None):
     libs = run("""SELECT l.id, l.name, l.type_id FROM libraries l ORDER BY l.name""")
     types = run("SELECT id, name FROM library_types ORDER BY name")
     return render_template("form.html", kind=kind, meta=meta, row=row or {}, libs=libs, types=types)
+
+@app.route("/usage/<int:rid>/pdf")
+def order_pdf(rid):
+    from order_pdf import build_order
+    r = run("""SELECT s.*, l.name lib_name, t.name type_name FROM stock_verifications s
+               JOIN libraries l ON l.id=s.library_id JOIN library_types t ON t.id=s.library_type_id
+               WHERE s.id=%s AND s.order_type='usage'""", (rid,), "one")
+    if not r: abort(404)
+    try:
+        data = build_order(r)
+    except AssertionError:
+        flash("ஆணை ஒரு பக்கத்தில் அடங்கவில்லை.", "err"); return redirect(url_for("listing", kind="usage"))
+    return send_file(io.BytesIO(data), mimetype="application/pdf", as_attachment=True,
+                     download_name=f"thallupadi_aanai_{rid}.pdf")
 
 @app.post("/<kind>/<int:rid>/delete")
 def delete(kind, rid):

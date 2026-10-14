@@ -11,7 +11,7 @@
 <td>{{ r.file_no }}</td><td>{{ r.file_date|dmy }}</td><td>{{ r.lib_name }}</td><td>{{ r.type_name }}</td>
 {% if meta.full %}<td>{{ r.period_from|dmy }} முதல் {{ r.period_to|dmy }} முடிய</td><td>{{ r.officer_report_date|dmy }}</td>
 <td class="n">{{ r.shortage_count if r.shortage_count is not none else '—' }}</td><td class="n">{{ r.shortage_value if r.shortage_value is not none else '—' }}</td><td class="n">{{ r.total_used_books if r.total_used_books is not none else '—' }}</td><td>{{ r.stat_period_from|dmy }} முதல் {{ r.stat_period_to|dmy }} முடிய</td>{% endif %}
-<td style="white-space:nowrap"><a class="btn alt" href="{{ url_for('form', kind=kind, rid=r.id) }}">திருத்து</a>
+<td style="white-space:nowrap">{% if kind == 'usage' %}<a class="btn" href="{{ url_for('order_pdf', rid=r.id) }}">ஆணை PDF</a> {% endif %}<a class="btn alt" href="{{ url_for('form', kind=kind, rid=r.id) }}">திருத்து</a>
 <form method="post" action="{{ url_for('delete', kind=kind, rid=r.id) }}" style="display:inline" onsubmit="return confirm('இந்தப் பதிவை நீக்கவா?')"><button class="btn del">நீக்கு</button></form></td>
 </tr>{% endfor %}</table></div>
 {% else %}<p>இன்னும் பதிவுகள் இல்லை. “புதிய பதிவு சேர்” என்பதை அழுத்தி முதல் பதிவைச் சேர்க்கவும்.</p>{% endif %}

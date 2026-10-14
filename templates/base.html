@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="ta"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{% block title %}இருப்பு சரிபார்ப்பு{% endblock %} | தமிழ்நாடு அரசு பொது நூலகத் துறை</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Tamil:wght@400;500;700&family=Noto+Serif+Tamil:wght@600;800&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#10294a;--ink2:#1c3d6b;--brass:#b8862b;--paper:#f4f6f9;--line:#d6dce6;--ok:#1f7a4d;--err:#b3261e}
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.7 "Noto Sans Tamil",system-ui,sans-serif;background:var(--paper);color:#1a2330}
+h1,h2{font-family:"Noto Serif Tamil",serif;line-height:1.35;margin:0}
+a{color:var(--ink2)}
+:focus-visible{outline:3px solid var(--brass);outline-offset:2px}
+.top{background:var(--ink);color:#fff;padding:.7rem 1.25rem;display:flex;gap:1rem;align-items:center;justify-content:space-between}
+.top a{color:#fff;text-decoration:none;font-weight:500}
+.wrap{max-width:1100px;margin:0 auto;padding:1.5rem 1.25rem}
+.flash{padding:.7rem 1rem;border-radius:6px;margin-bottom:1rem;font-weight:500}
+.flash.ok{background:#e3f4ea;color:var(--ok)}.flash.err{background:#fbe7e5;color:var(--err)}
+.btn{display:inline-block;background:var(--ink);color:#fff;border:0;border-radius:6px;padding:.6rem 1.2rem;font:inherit;font-weight:500;cursor:pointer;text-decoration:none}
+.btn:hover{background:var(--ink2)}.btn.alt{background:#fff;color:var(--ink);border:1px solid var(--line)}
+.btn.del{background:#fff;color:var(--err);border:1px solid #e5b8b4}
+form.card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:1.5rem;display:grid;grid-template-columns:1fr 1fr;gap:1rem 1.5rem}
+form.card .full{grid-column:1/-1}
+label{display:block;font-weight:500;margin-bottom:.25rem}
+input,select{width:100%;padding:.6rem .7rem;border:1px solid #b9c3d3;border-radius:6px;font:inherit;background:#fff}
+.range{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.table-wrap{overflow-x:auto;background:#fff;border:1px solid var(--line);border-radius:10px}
+table{border-collapse:collapse;width:100%;min-width:720px}
+th,td{padding:.65rem .8rem;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{background:#eaeff6;font-weight:700}
+td.n{text-align:right}
+.head{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1rem}
+@media(max-width:640px){form.card{grid-template-columns:1fr}.range{grid-template-columns:1fr}}
+</style></head><body>
+<div class="top"><a href="{{ url_for('index') }}">தமிழ்நாடு அரசு பொது நூலகத் துறை</a><a href="{{ url_for('index') }}">முகப்பு</a></div>
+{% block body %}{% endblock %}
+</body></html>

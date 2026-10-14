@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}முகப்பு{% endblock %}
+{% block body %}
+<style>
+.hero{background:var(--ink);color:#fff;padding:4.5rem 1.25rem 0;position:relative;overflow:hidden}
+.hero .in{max-width:1100px;margin:0 auto;padding-bottom:7rem}
+.hero h1{font-size:clamp(2rem,5.5vw,3.6rem);font-weight:800}
+.hero p{font-size:clamp(1.1rem,2.4vw,1.5rem);color:#e9d6a8;margin:.6rem 0 0;font-weight:500}
+.shelf{position:absolute;left:0;right:0;bottom:0;height:70px;display:flex;align-items:flex-end;gap:5px;padding:0 1.25rem;border-bottom:8px solid var(--brass)}
+.shelf i{display:block;width:clamp(14px,2.2vw,28px);border-radius:3px 3px 0 0;background:var(--ink2)}
+.shelf i:nth-child(3n){background:#2c5b94}.shelf i:nth-child(5n){background:var(--brass)}.shelf i:nth-child(7n){background:#e9d6a8}
+.cards{max-width:1100px;margin:-3rem auto 0;padding:0 1.25rem 3rem;display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:1.25rem;position:relative}
+.act{background:#fff;border:1px solid var(--line);border-top:5px solid var(--brass);border-radius:10px;padding:1.4rem;text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:.7rem;min-height:210px}
+.act:hover{border-top-color:var(--ink);box-shadow:0 6px 18px rgba(16,41,74,.14)}
+.act h2{font-size:1.2rem;color:var(--ink)}
+.act small{color:#5a6678}
+.act .row{margin-top:auto;display:flex;justify-content:space-between;align-items:center}
+.act b{font-size:1.6rem;color:var(--ink);font-family:"Noto Serif Tamil",serif}
+@media(max-width:800px){.cards{grid-template-columns:1fr}.act{min-height:0}}
+</style>
+<section class="hero"><div class="in">
+<h1>தமிழ்நாடு அரசு பொது நூலகத் துறை</h1>
+<p>இருப்பு சரிபார்ப்பு அலுவலர் பணிகள்</p></div>
+<div class="shelf" aria-hidden="true">{% for h in [38,56,44,66,34,60,48,70,40,54,62,36,58,46,68,42,52,64,38,56,44,60,50,66,36,58,46,62,40,54,68,44] %}<i style="height:{{h}}px"></i>{% endfor %}</div></section>
+<div class="cards">
+{% for k, m in kinds.items() %}
+<a class="act" href="{{ url_for('listing', kind=k) }}">
+<h2>{{ m.title }}</h2>
+<small>{% if m.full %}கோப்பு ந.க.எண்., நூலகம், இருப்பு சரிபார்ப்பு காலம், குறைவு விவரங்கள், மொத்த பயன்பாட்டு நூல்கள்{% else %}கோப்பு ந.க.எண்., நாள், நூலகம், நூலக வகை{% endif %}</small>
+<div class="row"><span>பதிவுகள்</span><b>{{ counts.get(k, 0) }}</b></div>
+</a>
+{% endfor %}
+</div>
+{% endblock %}

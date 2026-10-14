@@ -10,7 +10,11 @@
 <div class="st"><h3>படி 1 – ஒப்பப் புள்ளி கோர அனுமதி ஆணை (முடிந்தது)</h3>
 <p style="margin:.2rem 0 .8rem">நாள் {{ c.s1_file_date|dmy }} · பழுதடைந்த நூல்கள் {{ c.s1_damaged_count if c.s1_damaged_count is not none else '—' }} · மதிப்பு ₹ {{ c.s1_damaged_value if c.s1_damaged_value is not none else '—' }}</p>
 <a class="btn" href="{{ url_for('step1_pdf', cid=c.id) }}">ஆணை PDF</a> <a class="btn alt" href="{{ url_for('step1', cid=c.id) }}">திருத்து</a></div>
-<div class="st lock"><h3>படி 2 – விலைப்புள்ளி பரிசீலனை: அலுவலகக் குறிப்பு, ஆணை</h3>படி 1 முடிந்தது; இந்தப் படி விரைவில் சேர்க்கப்படும்.</div>
+{% if c.s2_file_date %}<div class="st"><h3>படி 2 – விலைப்புள்ளி பரிசீலனை: அலுவலகக் குறிப்பு, ஆணை (முடிந்தது)</h3>
+<p style="margin:.2rem 0 .8rem">நாள் {{ c.s2_file_date|dmy }} · மொத்த எடை {{ c.s2_total_weight }} கிலோ</p>
+<a class="btn" href="{{ url_for('step2_note_pdf', cid=c.id) }}">அலுவலகக் குறிப்பு PDF</a> <a class="btn" href="{{ url_for('step2_order_pdf', cid=c.id) }}">ஆணை PDF</a> <a class="btn alt" href="{{ url_for('step2', cid=c.id) }}">திருத்து</a></div>
+{% else %}<div class="st"><h3>படி 2 – விலைப்புள்ளி பரிசீலனை: அலுவலகக் குறிப்பு, ஆணை</h3>
+<p style="margin:.2rem 0 .8rem">மூன்று விலைப்புள்ளிகளின் விவரங்களை உள்ளிடவும்.</p><a class="btn" href="{{ url_for('step2', cid=c.id) }}">படி 2 தொடங்கு</a></div>{% endif %}
 <div class="st lock"><h3>படி 3</h3>படி 2 முடிந்த பின்னரே திறக்கும்.</div>
 <div class="st lock"><h3>படி 4 – விற்பனை ரசீது, இருப்பு நீக்க அனுமதி</h3>படி 3 முடிந்த பின்னரே திறக்கும்.</div>
 </div>{% endblock %}

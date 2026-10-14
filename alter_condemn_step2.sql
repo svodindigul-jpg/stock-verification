@@ -1,0 +1,7 @@
+-- படி 2 (விலைப்புள்ளி பரிசீலனை: அலுவலகக் குறிப்பு, ஆணை). Neon SQL Editor-ல் ஒருமுறை ரன் செய்யவும்
+ALTER TABLE condemn_cases
+  ADD COLUMN IF NOT EXISTS s2_file_date    DATE,
+  ADD COLUMN IF NOT EXISTS s2_total_weight NUMERIC(12,3),
+  ADD COLUMN IF NOT EXISTS s2_q1_name TEXT, ADD COLUMN IF NOT EXISTS s2_q1_addr TEXT, ADD COLUMN IF NOT EXISTS s2_q1_rate NUMERIC(12,2),
+  ADD COLUMN IF NOT EXISTS s2_q2_name TEXT, ADD COLUMN IF NOT EXISTS s2_q2_addr TEXT, ADD COLUMN IF NOT EXISTS s2_q2_rate NUMERIC(12,2),
+  ADD COLUMN IF NOT EXISTS s2_q3_name TEXT, ADD COLUMN IF NOT EXISTS s2_q3_addr TEXT, ADD COLUMN IF NOT EXISTS s2_q3_rate NUMERIC(12,2);

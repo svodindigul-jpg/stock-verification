@@ -164,5 +164,42 @@ def step1_pdf(cid):
         flash("ஆணை ஒரு பக்கத்தில் அடங்கவில்லை.", "err"); return redirect(url_for("unusable_case", cid=cid))
     return send_file(io.BytesIO(data), mimetype="application/pdf", as_attachment=True, download_name=fname(c["lib_name"], "quotation callfor"))
 
+# ---------- படி 2: விலைப்புள்ளி பரிசீலனை (அலுவலகக் குறிப்பு + ஆணை) ----------
+@app.route("/unusable/case/<int:cid>/step2", methods=["GET", "POST"])
+def step2(cid):
+    c = run(CASE_SQL, (cid,), "one") or abort(404)
+    if request.method == "POST":
+        from decimal import Decimal
+        d = [val("file_date"), val("total_weight", Decimal)]
+        for i in (1, 2, 3):
+            d += [val(f"q{i}_name"), val(f"q{i}_addr"), val(f"q{i}_rate", Decimal)]
+        if d[0] is None or d[1] is None or any(d[2 + 3 * k] is None or d[4 + 3 * k] is None for k in range(3)):
+            flash("நாள், மொத்த எடை, மூன்று விலைப்புள்ளிகளின் பெயர் மற்றும் ஒரு கிலோ விலை ஆகியவை கட்டாயம்.", "err")
+            c = {**c, **{f"s2_{k}": v for k, v in request.form.items()}}
+        else:
+            run("""UPDATE condemn_cases SET s2_file_date=%s,s2_total_weight=%s,
+                   s2_q1_name=%s,s2_q1_addr=%s,s2_q1_rate=%s,s2_q2_name=%s,s2_q2_addr=%s,s2_q2_rate=%s,
+                   s2_q3_name=%s,s2_q3_addr=%s,s2_q3_rate=%s WHERE id=%s""", d + [cid], None)
+            flash("படி 2 சேமிக்கப்பட்டது.", "ok")
+            return redirect(url_for("unusable_case", cid=cid))
+    return render_template("step2.html", c=c)
+
+def _step2_pdf(cid, which):
+    import condemn_step2_pdf as m
+    c = run(CASE_SQL, (cid,), "one") or abort(404)
+    if c["s2_file_date"] is None: abort(404)
+    try:
+        data = m.build_note(c) if which == "note" else m.build_order(c)
+    except AssertionError:
+        flash("ஆவணம் ஒரு பக்கத்தில் அடங்கவில்லை.", "err"); return redirect(url_for("unusable_case", cid=cid))
+    return send_file(io.BytesIO(data), mimetype="application/pdf", as_attachment=True,
+                     download_name=fname(c["lib_name"], "quotation note" if which == "note" else "sale order"))
+
+@app.route("/unusable/case/<int:cid>/step2_note.pdf")
+def step2_note_pdf(cid): return _step2_pdf(cid, "note")
+
+@app.route("/unusable/case/<int:cid>/step2_order.pdf")
+def step2_order_pdf(cid): return _step2_pdf(cid, "order")
+
 if __name__ == "__main__":
     app.run(debug=True)

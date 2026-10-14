@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}படி 2{% endblock %}
+{% block body %}<div class="wrap">
+{% with m = get_flashed_messages(with_categories=true) %}{% for cl, t in m %}<div class="flash {{cl}}">{{t}}</div>{% endfor %}{% endwith %}
+<div class="head"><div><h2>படி 2 – விலைப்புள்ளி பரிசீலனை</h2><small>{{ c.lib_name }} – {{ c.type_name }}</small></div>
+<a class="btn alt" href="{{ url_for('unusable_case', cid=c.id) }}">பின்செல்</a></div>
+<form method="post" class="card">
+<div><label>1. கோப்பு எண்</label><input value="{{ c.s1_file_no }}" disabled></div>
+<div><label for="fd">2. கோப்பு நாள் *</label><input id="fd" type="date" name="file_date" required value="{{ c.s2_file_date or '' }}"></div>
+<div class="full"><label for="w">3. பழுதடைந்த நூல்களின் மொத்த எடை (கிலோ) *</label><input id="w" type="number" min="0" step="0.001" name="total_weight" required value="{{ c.s2_total_weight if c.s2_total_weight is not none }}"></div>
+{% for i in (1,2,3) %}
+<div class="full q"><b>4.{{ i }} விலைப்புள்ளி {{ i }}</b></div>
+<div><label>பெயர் *</label><input name="q{{i}}_name" required value="{{ c['s2_q%d_name' % i] or '' }}"></div>
+<div><label>ஒரு கிலோவிற்கு தொகை (₹) *</label><input type="number" min="0" step="0.01" name="q{{i}}_rate" required class="rate" value="{{ c['s2_q%d_rate' % i] if c['s2_q%d_rate' % i] is not none }}"></div>
+<div class="full"><label>முகவரி</label><input name="q{{i}}_addr" value="{{ c['s2_q%d_addr' % i] or '' }}"></div>
+{% endfor %}
+<div class="full" id="calc" style="background:#f4f6f9;border-radius:8px;padding:.8rem 1rem"></div>
+<div class="full"><button class="btn" type="submit">சேமி</button></div>
+</form></div>
+<script>
+// மொத்த தொகை = மொத்த எடை x ஒரு கிலோ விலை; அதிக தொகை அளித்தவர் தேர்வு
+const w = document.getElementById('w'), rs = [...document.querySelectorAll('.rate')], out = document.getElementById('calc');
+const names = [...document.querySelectorAll('input[name$="_name"]')];
+function calc() {
+  const wt = parseFloat(w.value) || 0; let best = -1, bi = -1, h = '';
+  rs.forEach((r, i) => { const v = parseFloat(r.value); if (isNaN(v)) return;
+    const t = Math.round(wt * v * 100) / 100; h += `விலைப்புள்ளி ${i+1}: ₹ ${t.toLocaleString('en-IN',{minimumFractionDigits:2})}<br>`;
+    if (v > best) { best = v; bi = i; } });
+  out.innerHTML = h ? h + (bi >= 0 ? `<b>அதிக விலைப்புள்ளி: ${names[bi].value || 'விலைப்புள்ளி ' + (bi+1)}</b>` : '') : 'மொத்த தொகை = மொத்த எடை × ஒரு கிலோ விலை';
+}
+[w, ...rs, ...names].forEach(e => e.addEventListener('input', calc)); calc();
+</script>{% endblock %}

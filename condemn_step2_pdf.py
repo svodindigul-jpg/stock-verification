@@ -25,6 +25,12 @@ def highest(qs):
     return max(ok, key=lambda q: q["rate"]) if ok else None
 
 
+def who(q):
+    """பெயர், முகவரி (முகவரி இருந்தால் மட்டும்)"""
+    addr = " ".join((q.get("addr") or "").split())
+    return f"{q['name']}, {addr}" if addr else q["name"]
+
+
 def kg(v):  # 1250.500 -> "1,250.5"; 1250.000 -> "1,250"
     s = f"{Decimal(str(v)):,.3f}".rstrip("0").rstrip(".")
     return s or "0"
@@ -84,17 +90,17 @@ def _render_note(r, FS):
     pdf.ln(2)
 
     pdf.set_font("T", "", FS - 1)
-    with pdf.table(col_widths=(10, 90, 25, 25), text_align=("CENTER", "LEFT", "RIGHT", "RIGHT"),
+    with pdf.table(col_widths=(24, 60, 38, 43), text_align=("CENTER", "LEFT", "RIGHT", "RIGHT"),
                    line_height=(FS - 1) * 0.5, padding=1.2, width=W) as t:
         h = t.row()
-        for c in ("வ.எண்", "விலைப்புள்ளி அளித்தவர் பெயர் முகவரி", "ஒரு கிலோவிற்கான விலை (₹)", "மொத்த விலை (₹)"):
+        for c in ("வ.எண்", "விலைப்புள்ளி அளித்தவர் பெயர் முகவரி", "ஒரு கிலோ விலை", "மொத்த விலை"):
             h.cell(c)
         for i, q in enumerate(qs, 1):
             row = t.row()
             row.cell(str(i)); row.cell(q["name"] + (("\n" + q["addr"]) if q["addr"] else ""))
-            row.cell(num(q["rate"])); row.cell(num(q["total"]))
+            row.cell(f"ரூ. {num(q['rate'])}"); row.cell(f"ரூ. {num(q['total'])}")
     pdf.set_font("T", "", FS); pdf.ln(3)
-    pdf.multi_cell(W, LH, "\u2003" * 4 + f"மேற்கண்ட விலைப்புள்ளிகளில் அதிக விலைப்புள்ளி அளித்த திருவாளர் {top['name']} என்பாருக்கு பழுதடைந்த நூல்களை விற்றுக் கொள்ள நூலகருக்கு அனுமதி அளிக்கலாமா என்பதற்கு ஆணை வேண்டி பணிந்தனுப்பப்படுகிறது.", align="J", **nl)
+    pdf.multi_cell(W, LH, "\u2003" * 4 + f"மேற்கண்ட விலைப்புள்ளிகளில் அதிக விலைப்புள்ளி அளித்த திருவாளர் {who(top)} என்பாருக்கு பழுதடைந்த நூல்களை விற்றுக் கொள்ள நூலகருக்கு அனுமதி அளிக்கலாமா என்பதற்கு ஆணை வேண்டி பணிந்தனுப்பப்படுகிறது.", align="J", **nl)
     pdf.ln(4); pdf.cell(W, LH, "ஆணைக்காக", **nl)
     assert pdf.page == 1 and pdf.get_y() < 285
     return bytes(pdf.output())
@@ -129,7 +135,7 @@ def _render_order(r, FS):
     y = pdf.get_y(); pdf.cell(W, LH, "ஆணை", **nl)
     pdf.line(L, y + LH, L + pdf.get_string_width("ஆணை"), y + LH); pdf.ln(2)
     pdf.set_font("T", "", FS)
-    pdf.multi_cell(W, LH, "\u2003" * 4 + f"பார்வை 2ல் காணும் {lib} {gen(typ)} நூலகரின் கடிதத்துடன் இணைத்து சமர்ப்பித்த ஒப்பந்தப்புள்ளிகளின் பரிசீலனை செய்யப்பட்டு திருவாளர். {top['name']} என்பாருக்கு {lib} {gen(typ)} பழுதடைந்து பயன்படுத்த இயலாத நிலையில் உள்ள {num(r['s1_damaged_count'])} எண்ணிக்கையிலான {kg(r['s2_total_weight'])} கிலோ எடை உள்ள நூல்களை கிலோ ஒன்றுக்கு ரூ. {num(top['rate'])} வீதம் ரூ. {num(top['total'])} மதிப்பில் விற்பனை செய்து கொள்ள நூலகருக்கு கீழ்க்காணும் நிபந்தனைகளுக்குட்பட்டு அனுமதி அளிக்கப்படுகிறது.", align="J", **nl)
+    pdf.multi_cell(W, LH, "\u2003" * 4 + f"பார்வை 2ல் காணும் {lib} {gen(typ)} நூலகரின் கடிதத்துடன் இணைத்து சமர்ப்பித்த ஒப்பந்தப்புள்ளிகளின் பரிசீலனை செய்யப்பட்டு **--திருவாளர். {who(top)} என்பாருக்கு--** {lib} {gen(typ)} பழுதடைந்து பயன்படுத்த இயலாத நிலையில் உள்ள **--{num(r['s1_damaged_count'])} எண்ணிக்கையிலான {kg(r['s2_total_weight'])} கிலோ எடை உள்ள நூல்களை கிலோ ஒன்றுக்கு ரூ. {num(top['rate'])} வீதம் ரூ. {num(top['total'])} மதிப்பில்--** விற்பனை செய்து கொள்ள நூலகருக்கு கீழ்க்காணும் நிபந்தனைகளுக்குட்பட்டு அனுமதி அளிக்கப்படுகிறது.", align="J", markdown=True, **nl)
     pdf.ln(2.5)
     conds = ["விற்பனைத் தொகைக்கு அன்றைய தினமே இரசீது கொடுக்க வேண்டும்.",
              "விற்பனை செய்து முடித்த பின்னர் தொகையினை உடனடியாக வங்கியில் செலுத்த வேண்டும்.",
@@ -142,6 +148,6 @@ def _render_order(r, FS):
     pdf.multi_cell(W * 0.45, LH, "மாவட்ட நூலக அலுவலர்\nதிண்டுக்கல்.", align="C", **nl)
     pdf.ln(4); pdf.set_x(L); pdf.cell(W, LH, "பெறுநர்", **nl)
     pdf.set_font("T", "", FS)
-    for t in ("நூலகர்,", lib, typ): pdf.cell(W, LH, t, **nl)
+    for t in ("நூலகர்,", typ, lib): pdf.cell(W, LH, t, **nl)
     assert pdf.page == 1 and pdf.get_y() < 285
     return bytes(pdf.output())

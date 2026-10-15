@@ -6,7 +6,7 @@ app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "change-me")
 
 KINDS = {
-    "usage":     {"title": "பயன்பாட்டு அடிப்படையில் தள்ளுபடி ஆணை", "full": True},
+    "usage":     {"title": "பயன்பாட்டு அடிப்படையில் இருப்பு நீக்க ஆணை", "full": True},
     "unusable":  {"title": "பயன்படுத்த இயலாத நூல்கள் இருப்பு நீக்கம்", "full": False},
     "recovered": {"title": "நூலகரிடம் வசூல் செய்யப்பட்ட நூல்கள் இருப்பு நீக்கம்", "full": False},
 }

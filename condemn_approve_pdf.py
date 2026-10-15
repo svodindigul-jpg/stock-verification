@@ -1,5 +1,6 @@
 """பழுதடைந்த நூல்கள் - படி 3: இருப்பு நீக்க அனுமதி ஆணை (விற்பனைத் தொகை செலுத்திய விவரம்). A4, ஒரே பக்கம்."""
 from decimal import Decimal
+from fpdf.fonts import FontFace
 from order_pdf import dmy, num, clean_name
 from condemn_step2_pdf import _pdf, gen, quotes, highest
 
@@ -58,11 +59,21 @@ def _render(r, FS):
     pdf.multi_cell(W, LH, "\u2003" * 4 + f"பார்வை 2ல் காணும் {lib} {gen(typ)} நூலகரின் கடிதத்தில் பார்வை 1ல் காணும் {approvals} நாளிட்ட செயல்முறைகளில் அனுமதி அளித்தவாறு பழுதடைந்து பயன்படுத்த இயலாத நிலையில் உள்ள கிளைப் பதிவெண் {acc_from} முதல் {acc_to} முடிய உள்ள {num(t_cnt)} எண்ணிக்கையிலான {rs(r['s1_damaged_value'])} மதிப்புள்ள நூல்களை விற்பனை செய்ய அனுமதிக்கப்பட்டு பின்வருமாறு தொகை வங்கி கணக்கில் செலுத்தப்பட்டுள்ளது.", align="J", **nl)
     pdf.ln(2.5)
 
+    # "நூல்கள்" நெடுவரிசை: தலைப்புச் சொல் உடையாத குறைந்தபட்ச அகலம்; மீதம் முழுவதும் "விவரம்" நெடுவரிசைக்கு
+    PAD, HFS = 1.2, FS - 3
+    pdf.set_font("T", "", FS - 1); w_nums = max(pdf.get_string_width(num(v)) for v in (h_cnt, a_cnt, t_cnt))
+    pdf.set_font("T", "B", HFS); w_cnt = max(w_nums + 2 * PAD + 1.5, 12.0)
+    while len(pdf.multi_cell(w_cnt - 2 * PAD, LH, "நூல்கள்", dry_run=True, output="LINES")) > 1:
+        w_cnt += 0.5          # தலைப்புச் சொல் ஒரே வரியில் அடங்கும் வரை (குறைந்தபட்சம்)
+    w_cnt += 1.0
+    w_no, w_amt, w_date = 22, 31, 27
+    cw = (w_no, W - w_no - w_cnt - w_amt - w_date, w_cnt, w_amt, w_date)
     pdf.set_font("T", "", FS - 1)
-    with pdf.table(col_widths=(22, 47, 38, 31, 27), text_align=("CENTER", "LEFT", "RIGHT", "RIGHT", "CENTER"),
-                   line_height=(FS - 1) * 0.5, padding=1.2, width=W) as t:
+    with pdf.table(col_widths=cw, text_align=("CENTER", "LEFT", "RIGHT", "RIGHT", "CENTER"),
+                   headings_style=FontFace(emphasis="BOLD", size_pt=HFS),
+                   line_height=(FS - 1) * 0.5, padding=PAD, width=W) as t:
         h = t.row()
-        for c in ("வ.எண்", "விவரம்", "எண்ணிக்கை", "மதிப்பு", "செலுத்திய நாள்"):
+        for c in ("வ.எண்", "விவரம்", "நூல்கள்", "மதிப்பு", "செலுத்திய நாள்"):
             h.cell(c, align="C")
         row = t.row(); row.cell("1"); row.cell("பாதி விலைக்கு விற்கப்பட்ட நூல்கள்")
         row.cell(num(h_cnt)); row.cell(rs(h_amt)); row.cell(dmy(r["s3_half_paid_date"]) if r["s3_half_paid_date"] else "")

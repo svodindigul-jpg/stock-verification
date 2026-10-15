@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}படி 3{% endblock %}
+{% block body %}<div class="wrap">
+{% with m = get_flashed_messages(with_categories=true) %}{% for cl, t in m %}<div class="flash {{cl}}">{{t}}</div>{% endfor %}{% endwith %}
+<div class="head"><div><h2>படி 3 – விற்பனை ரசீது, இருப்பு நீக்க அனுமதி</h2><small>{{ c.lib_name }} – {{ c.type_name }}</small></div>
+<a class="btn alt" href="{{ url_for('unusable_case', cid=c.id) }}">பின்செல்</a></div>
+<form method="post" class="card">
+<div><label>1. கோப்பு எண்</label><input value="{{ c.s1_file_no }}" disabled></div>
+<div><label for="fd">2. ஆணை நாள் *</label><input id="fd" type="date" name="file_date" required value="{{ c.s3_file_date or '' }}"></div>
+<div class="full"><label for="ld">3. நூலகர் கடிதம் நாள் *</label><input id="ld" type="date" name="letter_date" required value="{{ c.s3_letter_date or '' }}"></div>
+<div class="full q"><b>4. பாதி விலைக்கு விற்கப்பட்ட நூல்கள்</b> <small>(இல்லையெனில் எண்ணிக்கை, தொகை 0 என உள்ளிடவும்)</small></div>
+<div><label for="hc">எண்ணிக்கை *</label><input id="hc" type="number" min="0" step="1" name="half_count" required value="{{ c.s3_half_count if c.s3_half_count is not none }}"></div>
+<div><label for="ha">தொகை (₹) *</label><input id="ha" type="number" min="0" step="0.01" name="half_amount" required value="{{ c.s3_half_amount if c.s3_half_amount is not none }}"></div>
+<div class="full"><label for="hp">செலுத்தப்பட்ட நாள்</label><input id="hp" type="date" name="half_paid_date" value="{{ c.s3_half_paid_date or '' }}"></div>
+<div class="full q"><b>5. ஏல முறையில் விற்கப்பட்ட நூல்கள்</b> <small>(எண்ணிக்கை – படி 1; தொகை – படி 2)</small></div>
+<div><label>எண்ணிக்கை (படி 1)</label><input id="ac" value="{{ auction.count if auction.count is not none else '' }}" disabled></div>
+<div><label>தொகை (₹) (படி 2 – அதிக விலைப்புள்ளி)</label><input id="aa" value="{{ auction.amount if auction.amount is not none else '' }}" disabled></div>
+<div class="full"><label for="ap">செலுத்தப்பட்ட நாள் *</label><input id="ap" type="date" name="auction_paid_date" required value="{{ c.s3_auction_paid_date or '' }}"></div>
+{% if auction.count is none or c.s1_damaged_value is none %}<div class="full flash err">படி 1-ல் பழுதடைந்த நூல்கள் எண்ணிக்கை / மதிப்பு உள்ளிடப்படவில்லை; ஆணையில் அவை “........” என வரும். படி 1-ஐத் திருத்தவும்.</div>{% endif %}
+<div class="full" id="tot" style="background:#f4f6f9;border-radius:8px;padding:.8rem 1rem"></div>
+<div class="full"><button class="btn" type="submit">சேமி</button></div>
+</form></div>
+<script>
+const hc = document.getElementById('hc'), ha = document.getElementById('ha'), out = document.getElementById('tot');
+const aC = parseFloat('{{ auction.count if auction.count is not none else 0 }}') || 0, aA = parseFloat('{{ auction.amount if auction.amount is not none else 0 }}') || 0;
+function calc() {
+  const n = aC + (parseInt(hc.value) || 0), a = aA + (parseFloat(ha.value) || 0);
+  out.innerHTML = `<b>மொத்தம்:</b> ${n.toLocaleString('en-IN')} நூல்கள் · ₹ ${a.toLocaleString('en-IN', {minimumFractionDigits: 2})}`;
+}
+[hc, ha].forEach(e => e.addEventListener('input', calc)); calc();
+</script>{% endblock %}

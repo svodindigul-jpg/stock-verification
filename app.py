@@ -109,7 +109,7 @@ def delete(kind, rid):
     flash("பதிவு நீக்கப்பட்டது.", "ok")
     return redirect(url_for("listing", kind=kind))
 
-# ---------- பட்டன் 2: பயன்படுத்த இயலாத நூல்கள் (4 படிகள்; இப்போது படி 1) ----------
+# ---------- பட்டன் 2: பயன்படுத்த இயலாத நூல்கள் (3 படிகள்) ----------
 CASE_SQL = """SELECT c.*, l.name lib_name, t.name type_name FROM condemn_cases c
               JOIN libraries l ON l.id=c.library_id JOIN library_types t ON t.id=c.library_type_id WHERE c.id=%s"""
 
@@ -135,17 +135,19 @@ def step1(lid=None, cid=None):
     lib = get_lib(case["library_id"] if case else lid)
     if request.method == "POST":
         d = [val("file_no"), val("file_date"), val("letter_date"), val("inspector_date"),
-             val("damaged_count", int), val("damaged_value")]
+             val("damaged_count", int), val("damaged_value"), val("acc_from", int), val("acc_to", int)]
         if not (d[0] and d[1]):
             flash("கோப்பு எண், நாள் ஆகியவை கட்டாயம்.", "err")
+        elif d[6] is not None and d[7] is not None and d[7] < d[6]:
+            flash("கிளைப் பதிவெண் “முடிய” என்பது “முதல்” என்பதை விடக் குறைவாக இருக்கக்கூடாது.", "err")
         else:
             if case:
                 run("""UPDATE condemn_cases SET s1_file_no=%s,s1_file_date=%s,s1_letter_date=%s,s1_inspector_date=%s,
-                       s1_damaged_count=%s,s1_damaged_value=%s WHERE id=%s""", d + [cid], None)
+                       s1_damaged_count=%s,s1_damaged_value=%s,s1_acc_from=%s,s1_acc_to=%s WHERE id=%s""", d + [cid], None)
             else:
                 cid = run("""INSERT INTO condemn_cases(s1_file_no,s1_file_date,s1_letter_date,s1_inspector_date,
-                             s1_damaged_count,s1_damaged_value,library_id,library_type_id)
-                             VALUES(%s,%s,%s,%s,%s,%s,%s,%s) RETURNING id""", d + [lib["id"], lib["type_id"]], "one")["id"]
+                             s1_damaged_count,s1_damaged_value,s1_acc_from,s1_acc_to,library_id,library_type_id)
+                             VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) RETURNING id""", d + [lib["id"], lib["type_id"]], "one")["id"]
             flash("படி 1 சேமிக்கப்பட்டது.", "ok")
             return redirect(url_for("unusable_case", cid=cid))
     return render_template("step1.html", lib=lib, row=case or {})
@@ -200,6 +202,41 @@ def step2_note_pdf(cid): return _step2_pdf(cid, "note")
 
 @app.route("/unusable/case/<int:cid>/step2_order.pdf")
 def step2_order_pdf(cid): return _step2_pdf(cid, "order")
+
+# ---------- படி 3: இருப்பு நீக்க அனுமதி ஆணை (விற்பனைத் தொகை செலுத்திய விவரம்) ----------
+@app.route("/unusable/case/<int:cid>/step3", methods=["GET", "POST"])
+def step3(cid):
+    import condemn_step2_pdf as m2
+    from decimal import Decimal
+    c = run(CASE_SQL, (cid,), "one") or abort(404)
+    if c["s2_file_date"] is None:
+        flash("படி 2 முடிந்த பின்னரே படி 3 திறக்கும்.", "err"); return redirect(url_for("unusable_case", cid=cid))
+    top = m2.highest(m2.quotes(c))
+    auction = {"count": c["s1_damaged_count"], "amount": top["total"] if top else None}
+    if request.method == "POST":
+        d = [val("file_date"), val("letter_date"), val("half_count", int), val("half_amount", Decimal),
+             val("half_paid_date"), val("auction_paid_date")]
+        if any(d[i] is None for i in (0, 1, 2, 3, 5)):
+            flash("நாள், நூலகர் கடிதம் நாள், பாதி விலை நூல்கள் எண்ணிக்கை மற்றும் தொகை, ஏல தொகை செலுத்திய நாள் ஆகியவை கட்டாயம் (பாதி விலை நூல்கள் இல்லையெனில் 0 உள்ளிடவும்).", "err")
+            c = {**c, **{f"s3_{k}": v for k, v in request.form.items()}}
+        else:
+            run("""UPDATE condemn_cases SET s3_file_date=%s,s3_letter_date=%s,s3_half_count=%s,s3_half_amount=%s,
+                   s3_half_paid_date=%s,s3_auction_paid_date=%s WHERE id=%s""", d + [cid], None)
+            flash("படி 3 சேமிக்கப்பட்டது.", "ok")
+            return redirect(url_for("unusable_case", cid=cid))
+    return render_template("step3.html", c=c, auction=auction)
+
+@app.route("/unusable/case/<int:cid>/step3.pdf")
+def step3_pdf(cid):
+    from condemn_approve_pdf import build_approve
+    c = run(CASE_SQL, (cid,), "one") or abort(404)
+    if c["s3_file_date"] is None: abort(404)
+    try:
+        data = build_approve(c)
+    except AssertionError:
+        flash("ஆணை ஒரு பக்கத்தில் அடங்கவில்லை.", "err"); return redirect(url_for("unusable_case", cid=cid))
+    return send_file(io.BytesIO(data), mimetype="application/pdf", as_attachment=True,
+                     download_name=fname(c["lib_name"], "condemn approve"))
 
 if __name__ == "__main__":
     app.run(debug=True)

@@ -5,6 +5,6 @@
 <div class="head"><div><h2>{{ lib.name }}</h2><small>{{ lib.type_name }}</small></div>
 <span><a class="btn alt" href="{{ url_for('unusable_home') }}">வேறு நூலகம்</a> <a class="btn" href="{{ url_for('step1', lid=lib.id) }}">புதிய கோரிக்கை (படி 1)</a></span></div>
 {% if cases %}<div class="table-wrap"><table><tr><th>கோப்பு எண்</th><th>நாள்</th><th>பழுதடைந்த நூல்கள்</th><th>மதிப்பு (₹)</th><th>நிலை</th><th></th></tr>
-{% for c in cases %}<tr><td>{{ c.s1_file_no }}</td><td>{{ c.s1_file_date|dmy }}</td><td class="n">{{ c.s1_damaged_count if c.s1_damaged_count is not none else '—' }}</td><td class="n">{{ c.s1_damaged_value if c.s1_damaged_value is not none else '—' }}</td><td>{{ 'படி 2 முடிந்தது' if c.s2_file_date else 'படி 1 முடிந்தது' }}</td><td><a class="btn alt" href="{{ url_for('unusable_case', cid=c.id) }}">திற</a></td></tr>{% endfor %}</table></div>
+{% for c in cases %}<tr><td>{{ c.s1_file_no }}</td><td>{{ c.s1_file_date|dmy }}</td><td class="n">{{ c.s1_damaged_count if c.s1_damaged_count is not none else '—' }}</td><td class="n">{{ c.s1_damaged_value if c.s1_damaged_value is not none else '—' }}</td><td>{{ 'படி 3 முடிந்தது' if c.s3_file_date else ('படி 2 முடிந்தது' if c.s2_file_date else 'படி 1 முடிந்தது') }}</td><td><a class="btn alt" href="{{ url_for('unusable_case', cid=c.id) }}">திற</a></td></tr>{% endfor %}</table></div>
 {% else %}<p>இந்த நூலகத்துக்கு இன்னும் கோரிக்கை இல்லை. “புதிய கோரிக்கை” என்பதை அழுத்தவும்.</p>{% endif %}
 </div>{% endblock %}

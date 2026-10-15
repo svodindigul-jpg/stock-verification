@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}பயன்படுத்த இயலாத நூல்கள்{% endblock %}
+{% block body %}<div class="wrap">
+{% with m = get_flashed_messages(with_categories=true) %}{% for c, t in m %}<div class="flash {{c}}">{{t}}</div>{% endfor %}{% endwith %}
+<div class="head"><h2>பயன்படுத்த இயலாத நூல்கள் இருப்பு நீக்கம்</h2></div>
+
+<h3 style="margin:.6rem 0">முடிக்கப்பட்ட நூலகங்கள் (படி 3 வரை)</h3>
+{% if done %}<div class="table-wrap"><table><tr><th>நூலகம்</th><th>வகை</th><th>கோப்பு எண்</th><th>படி 1 நாள்</th><th>படி 3 நாள்</th><th>பழுதடைந்த நூல்கள்</th><th>மதிப்பு (₹)</th><th></th></tr>
+{% for c in done %}<tr><td>{{ c.lib_name }}</td><td>{{ c.type_name }}</td><td>{{ c.s1_file_no }}</td><td>{{ c.s1_file_date|dmy }}</td><td>{{ c.s3_file_date|dmy }}</td><td class="n">{{ c.s1_damaged_count if c.s1_damaged_count is not none else '—' }}</td><td class="n">{{ c.s1_damaged_value if c.s1_damaged_value is not none else '—' }}</td><td><a class="btn alt" href="{{ url_for('unusable_case', cid=c.id) }}">திற</a></td></tr>{% endfor %}</table></div>
+{% else %}<p>இன்னும் எந்த நூலகத்திற்கும் 3 படிகளும் முடிக்கப்படவில்லை.</p>{% endif %}
+
+{% if pending %}<h3 style="margin:1.4rem 0 .6rem">பாதியில் உள்ளவை</h3>
+<div class="table-wrap"><table><tr><th>நூலகம்</th><th>வகை</th><th>கோப்பு எண்</th><th>படி 1 நாள்</th><th>நிலை</th><th></th></tr>
+{% for c in pending %}<tr><td>{{ c.lib_name }}</td><td>{{ c.type_name }}</td><td>{{ c.s1_file_no }}</td><td>{{ c.s1_file_date|dmy }}</td><td>{{ 'படி 2 முடிந்தது' if c.s2_file_date else 'படி 1 முடிந்தது' }}</td><td><a class="btn alt" href="{{ url_for('unusable_case', cid=c.id) }}">தொடர்க</a></td></tr>{% endfor %}</table></div>{% endif %}
+
+<div style="margin-top:1.6rem"><a class="btn" href="{{ url_for('unusable_new') }}">+ புதிய நூலகம் / புதிய வரிசை சேர்</a></div>
+</div>{% endblock %}

@@ -50,6 +50,8 @@ CREATE TABLE IF NOT EXISTS condemn_cases (
   s1_inspector_date DATE,
   s1_damaged_count INT,
   s1_damaged_value NUMERIC(14,2),
+  s1_acc_from      BIGINT,
+  s1_acc_to        BIGINT,
   created_at       TIMESTAMPTZ DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS idx_cc_lib ON condemn_cases(library_id);

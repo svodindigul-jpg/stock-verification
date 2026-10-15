@@ -11,7 +11,7 @@
 <div class="full q"><b>4. பாதி விலைக்கு விற்கப்பட்ட நூல்கள்</b> <small>(இல்லையெனில் எண்ணிக்கை, தொகை 0 என உள்ளிடவும்)</small></div>
 <div><label for="hc">எண்ணிக்கை *</label><input id="hc" type="number" min="0" step="1" name="half_count" required value="{{ c.s3_half_count if c.s3_half_count is not none }}"></div>
 <div><label for="ha">தொகை (₹) *</label><input id="ha" type="number" min="0" step="0.01" name="half_amount" required value="{{ c.s3_half_amount if c.s3_half_amount is not none }}"></div>
-<div class="full"><label for="hp">செலுத்தப்பட்ட நாள்</label><input id="hp" type="date" name="half_paid_date" value="{{ c.s3_half_paid_date or '' }}"></div>
+<div class="full"><label for="hp">செலுத்தப்பட்ட நாள் <span id="hps">*</span> <small>(எண்ணிக்கை 0 எனில் தேவையில்லை)</small></label><input id="hp" type="date" name="half_paid_date" value="{{ c.s3_half_paid_date or '' }}"></div>
 <div class="full q"><b>5. ஏல முறையில் விற்கப்பட்ட நூல்கள்</b> <small>(எண்ணிக்கை – படி 1; தொகை – படி 2)</small></div>
 <div><label>எண்ணிக்கை (படி 1)</label><input id="ac" value="{{ auction.count if auction.count is not none else '' }}" disabled></div>
 <div><label>தொகை (₹) (படி 2 – அதிக விலைப்புள்ளி)</label><input id="aa" value="{{ auction.amount if auction.amount is not none else '' }}" disabled></div>
@@ -21,10 +21,11 @@
 <div class="full"><button class="btn" type="submit">சேமி</button></div>
 </form></div>
 <script>
-const hc = document.getElementById('hc'), ha = document.getElementById('ha'), out = document.getElementById('tot');
+const hc = document.getElementById('hc'), ha = document.getElementById('ha'), hp = document.getElementById('hp'), hps = document.getElementById('hps'), out = document.getElementById('tot');
 const aC = parseFloat('{{ auction.count if auction.count is not none else 0 }}') || 0, aA = parseFloat('{{ auction.amount if auction.amount is not none else 0 }}') || 0;
 function calc() {
   const n = aC + (parseInt(hc.value) || 0), a = aA + (parseFloat(ha.value) || 0);
+  const need = (parseInt(hc.value) || 0) > 0; hp.required = need; hps.style.display = need ? '' : 'none';
   out.innerHTML = `<b>மொத்தம்:</b> ${n.toLocaleString('en-IN')} நூல்கள் · ₹ ${a.toLocaleString('en-IN', {minimumFractionDigits: 2})}`;
 }
 [hc, ha].forEach(e => e.addEventListener('input', calc)); calc();

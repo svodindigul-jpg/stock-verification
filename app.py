@@ -71,8 +71,8 @@ def form(kind, rid=None):
                 val("shortage_value") if full else None,
                 val("total_used_books", int) if full else None,
                 val("stat_period_from") if full else None, val("stat_period_to") if full else None]
-        if not (data[0] and data[1] and data[2] and data[3]):
-            flash("கோப்பு ந.க.எண்., நாள், நூலகம், நூலக வகை ஆகியவை கட்டாயம்.", "err")
+        if any(x is None for x in (data if full else data[:4])):
+            flash("எல்லா இடங்களையும் நிரப்ப வேண்டும்; எதுவும் காலியாக இருக்கக்கூடாது.", "err")
         else:
             if rid:
                 run("""UPDATE stock_verifications SET file_no=%s,file_date=%s,library_id=%s,library_type_id=%s,
@@ -119,6 +119,16 @@ def get_lib(lid):
 
 @app.route("/unusable/")
 def unusable_home():
+    # முதலில் முடிக்கப்பட்ட (படி 3 வரை) நூலகங்கள்; அடுத்து பாதியில் உள்ளவை; இறுதியில் புதிய நூலகம் சேர்க்கும் பட்டன்
+    cases = run("""SELECT c.*, l.name lib_name, t.name type_name FROM condemn_cases c
+                   JOIN libraries l ON l.id=c.library_id JOIN library_types t ON t.id=c.library_type_id
+                   ORDER BY c.s3_file_date DESC NULLS LAST, c.id DESC""")
+    done = [c for c in cases if c["s3_file_date"]]
+    pending = [c for c in cases if not c["s3_file_date"]]
+    return render_template("unusable_home.html", done=done, pending=pending)
+
+@app.route("/unusable/new")
+def unusable_new():
     return render_template("pick.html", types=run("SELECT id, name FROM library_types ORDER BY id"),
                            libs=run("SELECT id, name, type_id FROM libraries ORDER BY name"))
 
@@ -136,10 +146,13 @@ def step1(lid=None, cid=None):
     if request.method == "POST":
         d = [val("file_no"), val("file_date"), val("letter_date"), val("inspector_date"),
              val("damaged_count", int), val("damaged_value"), val("acc_from", int), val("acc_to", int)]
-        if not (d[0] and d[1]):
-            flash("கோப்பு எண், நாள் ஆகியவை கட்டாயம்.", "err")
-        elif d[6] is not None and d[7] is not None and d[7] < d[6]:
+        keep = {f"s1_{k}": v for k, v in request.form.items()}
+        if any(x is None for x in d):
+            flash("எல்லா இடங்களையும் நிரப்ப வேண்டும்; எதுவும் காலியாக இருக்கக்கூடாது.", "err")
+            case = {**(case or {}), **keep}
+        elif d[7] < d[6]:
             flash("கிளைப் பதிவெண் “முடிய” என்பது “முதல்” என்பதை விடக் குறைவாக இருக்கக்கூடாது.", "err")
+            case = {**(case or {}), **keep}
         else:
             if case:
                 run("""UPDATE condemn_cases SET s1_file_no=%s,s1_file_date=%s,s1_letter_date=%s,s1_inspector_date=%s,
@@ -175,8 +188,8 @@ def step2(cid):
         d = [val("file_date"), val("total_weight", Decimal)]
         for i in (1, 2, 3):
             d += [val(f"q{i}_name"), val(f"q{i}_addr"), val(f"q{i}_rate", Decimal)]
-        if d[0] is None or d[1] is None or any(d[2 + 3 * k] is None or d[4 + 3 * k] is None for k in range(3)):
-            flash("நாள், மொத்த எடை, மூன்று விலைப்புள்ளிகளின் பெயர் மற்றும் ஒரு கிலோ விலை ஆகியவை கட்டாயம்.", "err")
+        if any(x is None for x in d):
+            flash("எல்லா இடங்களையும் நிரப்ப வேண்டும்; எதுவும் காலியாக இருக்கக்கூடாது.", "err")
             c = {**c, **{f"s2_{k}": v for k, v in request.form.items()}}
         else:
             run("""UPDATE condemn_cases SET s2_file_date=%s,s2_total_weight=%s,
@@ -216,8 +229,10 @@ def step3(cid):
     if request.method == "POST":
         d = [val("file_date"), val("letter_date"), val("half_count", int), val("half_amount", Decimal),
              val("half_paid_date"), val("auction_paid_date")]
-        if any(d[i] is None for i in (0, 1, 2, 3, 5)):
-            flash("நாள், நூலகர் கடிதம் நாள், பாதி விலை நூல்கள் எண்ணிக்கை மற்றும் தொகை, ஏல தொகை செலுத்திய நாள் ஆகியவை கட்டாயம் (பாதி விலை நூல்கள் இல்லையெனில் 0 உள்ளிடவும்).", "err")
+        # பாதி விலை நூல்கள் 0 எனில் அதன் "செலுத்தப்பட்ட நாள்" தேவையில்லை
+        need = [x for i, x in enumerate(d) if not (i == 4 and d[2] == 0)]
+        if any(x is None for x in need):
+            flash("எல்லா இடங்களையும் நிரப்ப வேண்டும்; எதுவும் காலியாக இருக்கக்கூடாது (பாதி விலை நூல்கள் இல்லையெனில் எண்ணிக்கை, தொகை 0 உள்ளிடவும்; அப்போது செலுத்திய நாள் தேவையில்லை).", "err")
             c = {**c, **{f"s3_{k}": v for k, v in request.form.items()}}
         else:
             run("""UPDATE condemn_cases SET s3_file_date=%s,s3_letter_date=%s,s3_half_count=%s,s3_half_amount=%s,

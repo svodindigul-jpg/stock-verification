@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}பயன்படுத்த இயலாத நூல்கள்{% endblock %}
 {% block body %}<div class="wrap">
-<div class="head"><h2>பயன்படுத்த இயலாத நூல்கள் இருப்பு நீக்கம்</h2></div>
+<div class="head"><h2>புதிய நூலகம் / புதிய கோரிக்கை சேர்</h2><a class="btn alt" href="{{ url_for('unusable_home') }}">பட்டியலுக்குத் திரும்பு</a></div>
 <div class="card" style="background:#fff;border:1px solid var(--line);border-radius:10px;padding:1.5rem;display:grid;gap:1rem;max-width:560px">
 <div><label for="t">1. நூலக வகை</label><select id="t"><option value="">— தேர்வு செய்க —</option>{% for t in types %}<option value="{{ t.id }}">{{ t.name }}</option>{% endfor %}</select></div>
 <div><label for="l">2. நூலகம் பெயர்</label><select id="l" disabled><option value="">— முதலில் வகையைத் தேர்க —</option></select></div>

@@ -12,7 +12,7 @@
 <div class="full q"><b>4.{{ i }} விலைப்புள்ளி {{ i }}</b></div>
 <div><label>பெயர் *</label><input name="q{{i}}_name" required value="{{ c['s2_q%d_name' % i] or '' }}"></div>
 <div><label>ஒரு கிலோவிற்கு தொகை (₹) *</label><input type="number" min="0" step="0.01" name="q{{i}}_rate" required class="rate" value="{{ c['s2_q%d_rate' % i] if c['s2_q%d_rate' % i] is not none }}"></div>
-<div class="full"><label>முகவரி</label><input name="q{{i}}_addr" value="{{ c['s2_q%d_addr' % i] or '' }}"></div>
+<div class="full"><label>முகவரி *</label><input name="q{{i}}_addr" required value="{{ c['s2_q%d_addr' % i] or '' }}"></div>
 {% endfor %}
 <div class="full" id="calc" style="background:#f4f6f9;border-radius:8px;padding:.8rem 1rem"></div>
 <div class="full"><button class="btn" type="submit">சேமி</button></div>

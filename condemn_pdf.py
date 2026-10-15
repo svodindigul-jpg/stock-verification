@@ -15,6 +15,7 @@ def build_condemn_step1(r):
 
 def _render(r, FS):
     lib, typ = clean_name(r["lib_name"]), r["type_name"]
+    acc_from, acc_to = num(r["s1_acc_from"]), num(r["s1_acc_to"])
     LH = FS * 0.55
     pdf = FPDF(orientation="P", unit="mm", format="A4"); pdf.set_auto_page_break(False)
     pdf.add_font("T", "", os.path.join(FONT_DIR, "NotoSansTamil-Regular.ttf"))
